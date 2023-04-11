@@ -66,6 +66,8 @@ namespace StockDataGenerator.Repositories.Model.Entities
                     .HasMaxLength(100)
                     .IsUnicode(false);
 
+                entity.Property(e => e.regularMarketChange).HasColumnType("decimal(12, 2)");
+
                 entity.Property(e => e.regularMarketChangePercent).HasColumnType("decimal(12, 2)");
 
                 entity.Property(e => e.regularMarketPrice).HasColumnType("decimal(12, 2)");

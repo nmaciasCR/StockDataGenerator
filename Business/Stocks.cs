@@ -82,6 +82,7 @@ namespace StockDataGenerator.Business
                         q.regularMarketChangePercent = Convert.ToDecimal(yq.regularMarketChangePercent);
                         q.updateDate = dateToUpdate;
                         q.priorityId = this._priority.DefinePriority(q.regularMarketPrice, q.QuotesAlerts.Select(q => q.price).ToList());
+                        q.regularMarketChange = Convert.ToDecimal(yq.regularMarketChange);
                     }
 
                     //Actualizamos en la DB

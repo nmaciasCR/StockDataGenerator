@@ -14,7 +14,7 @@ namespace StockDataGenerator.Business.Model
         public double regularMarketPrice { get; set; }
         public double regularMarketChangePercent { get; set; }
         public string symbol { get; set; }
-
+        public double regularMarketChange { get; set; }
 
     }
 
