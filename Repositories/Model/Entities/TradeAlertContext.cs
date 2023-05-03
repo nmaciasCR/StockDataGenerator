@@ -30,8 +30,8 @@ namespace StockDataGenerator.Repositories.Model.Entities
             if (!optionsBuilder.IsConfigured)
             {
                 IConfigurationRoot _config = new ConfigurationBuilder()
-                    .SetBasePath(Directory.GetCurrentDirectory())
-                    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true).Build();
+                                   .SetBasePath(Directory.GetCurrentDirectory())
+                                   .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true).Build();
                 optionsBuilder.UseLazyLoadingProxies()
                     .UseSqlServer(_config.GetConnectionString("TradeAlert"));
             }
@@ -60,6 +60,8 @@ namespace StockDataGenerator.Repositories.Model.Entities
                     .IsRequired()
                     .HasMaxLength(50)
                     .IsUnicode(false);
+
+                entity.Property(e => e.dateReview).HasColumnType("datetime");
 
                 entity.Property(e => e.name)
                     .IsRequired()
@@ -99,6 +101,8 @@ namespace StockDataGenerator.Repositories.Model.Entities
                     .IsUnicode(false);
 
                 entity.Property(e => e.price).HasColumnType("decimal(12, 2)");
+
+                entity.Property(e => e.regularMarketPercentDiff).HasColumnType("decimal(12, 2)");
 
                 entity.HasOne(d => d.QuoteAlertType)
                     .WithMany(p => p.QuotesAlerts)

@@ -81,7 +81,7 @@ namespace StockDataGenerator.Business
                         q.regularMarketPrice = Convert.ToDecimal(yq.regularMarketPrice);
                         q.regularMarketChangePercent = Convert.ToDecimal(yq.regularMarketChangePercent);
                         q.updateDate = dateToUpdate;
-                        q.priorityId = this._priority.DefinePriority(q.regularMarketPrice, q.QuotesAlerts.Select(q => q.price).ToList());
+                        //q.priorityId = this._priority.DefinePriority(q.regularMarketPrice, q.QuotesAlerts.Select(q => q.price).ToList());
                         q.regularMarketChange = Convert.ToDecimal(yq.regularMarketChange);
                     }
 
@@ -98,6 +98,11 @@ namespace StockDataGenerator.Business
             }
             catch (Exception ex)
             {
+                ConsoleColor colorDefault = Console.ForegroundColor;
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(ex.Message);
+                Console.ForegroundColor = colorDefault;
+
                 return false;
             }
 
