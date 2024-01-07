@@ -5,18 +5,18 @@ using System.Collections.Generic;
 
 namespace StockDataGenerator.Repositories.Model.Entities
 {
-    public partial class Markets
+    public partial class Currencies
     {
-        public Markets()
+        public Currencies()
         {
             Quotes = new HashSet<Quotes>();
         }
 
         public int ID { get; set; }
         public string name { get; set; }
-        public string description { get; set; }
-        public string flag { get; set; }
-        public string state { get; set; }
+        public string code { get; set; }
+        public double euroExchange { get; set; }
+        public DateTime? updateDate { get; set; }
 
         public virtual ICollection<Quotes> Quotes { get; set; }
     }

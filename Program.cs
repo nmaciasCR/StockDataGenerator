@@ -36,10 +36,10 @@ namespace StockDataGenerator
                         options.UseSqlServer(_configuration.GetConnectionString("TradeAlert"));
                     });
                     services.AddTransient<Business.Interfaces.IStocks, Business.Stocks>();
-                    services.AddTransient<Business.Interfaces.IPriority, Business.Priority>();
                     services.AddTransient<Services.IYahooFinanceApi, Services.YahooFinanceApi>();
                     services.AddSingleton<Business.Interfaces.IWriter, Utils.Writer>();
-
+                    services.AddTransient<Services.ICurrencyConverter, Services.CurrencyConverter>();
+                    services.AddTransient<Business.Interfaces.ICurrencies, Business.Currencies>();
                 });
         }
 

@@ -1,8 +1,6 @@
 ﻿using System;
-using System.IO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.Extensions.Configuration;
 
 #nullable disable
 
@@ -19,7 +17,9 @@ namespace StockDataGenerator.Repositories.Model.Entities
         {
         }
 
+        public virtual DbSet<Currencies> Currencies { get; set; }
         public virtual DbSet<Markets> Markets { get; set; }
+        public virtual DbSet<Portfolio> Portfolio { get; set; }
         public virtual DbSet<Quotes> Quotes { get; set; }
         public virtual DbSet<QuotesAlerts> QuotesAlerts { get; set; }
         public virtual DbSet<QuotesAlertsTypes> QuotesAlertsTypes { get; set; }
@@ -29,11 +29,6 @@ namespace StockDataGenerator.Repositories.Model.Entities
         {
             if (!optionsBuilder.IsConfigured)
             {
-                IConfigurationRoot _config = new ConfigurationBuilder()
-                                   .SetBasePath(Directory.GetCurrentDirectory())
-                                   .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true).Build();
-                optionsBuilder.UseLazyLoadingProxies()
-                    .UseSqlServer(_config.GetConnectionString("TradeAlert"));
             }
         }
 
@@ -41,26 +36,57 @@ namespace StockDataGenerator.Repositories.Model.Entities
         {
             modelBuilder.HasAnnotation("Relational:Collation", "Modern_Spanish_CI_AS");
 
-            modelBuilder.Entity<Markets>(entity =>
+            modelBuilder.Entity<Currencies>(entity =>
             {
+                entity.Property(e => e.code)
+                    .IsRequired()
+                    .HasMaxLength(5)
+                    .IsUnicode(false);
+
                 entity.Property(e => e.name)
-                    .IsRequired()
-                    .HasMaxLength(20)
-                    .IsFixedLength(true);
-
-                entity.Property(e => e.state)
-                    .IsRequired()
-                    .HasMaxLength(20)
-                    .IsFixedLength(true);
-            });
-
-            modelBuilder.Entity<Quotes>(entity =>
-            {
-                entity.Property(e => e.currency)
                     .IsRequired()
                     .HasMaxLength(50)
                     .IsUnicode(false);
 
+                entity.Property(e => e.updateDate).HasColumnType("datetime");
+            });
+
+            modelBuilder.Entity<Markets>(entity =>
+            {
+                entity.Property(e => e.description)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.flag)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.name)
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.state)
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+            });
+
+            modelBuilder.Entity<Portfolio>(entity =>
+            {
+                entity.HasKey(e => e.quoteId);
+
+                entity.Property(e => e.quoteId).ValueGeneratedNever();
+
+                entity.HasOne(d => d.quote)
+                    .WithOne(p => p.Portfolio)
+                    .HasForeignKey<Portfolio>(d => d.quoteId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Portfolio_Quotes");
+            });
+
+            modelBuilder.Entity<Quotes>(entity =>
+            {
                 entity.Property(e => e.dateReview).HasColumnType("datetime");
 
                 entity.Property(e => e.name)
@@ -80,6 +106,12 @@ namespace StockDataGenerator.Repositories.Model.Entities
                     .IsUnicode(false);
 
                 entity.Property(e => e.updateDate).HasColumnType("datetime");
+
+                entity.HasOne(d => d.currency)
+                    .WithMany(p => p.Quotes)
+                    .HasForeignKey(d => d.currencyId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Quotes_Currencies");
 
                 entity.HasOne(d => d.market)
                     .WithMany(p => p.Quotes)
