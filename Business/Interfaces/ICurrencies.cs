@@ -9,7 +9,7 @@ namespace StockDataGenerator.Business.Interfaces
     public interface ICurrencies
     {
         List<Repositories.Model.Entities.Currencies> GetList();
-        Boolean RefreshFromService();
+        Task<Boolean> RefreshFromService();
         bool UpdateList(List<Repositories.Model.Entities.Currencies> currenciesToUpdate);
     }
 }

@@ -10,6 +10,6 @@ namespace StockDataGenerator.Business.Interfaces
     {
 
         List<Repositories.Model.Entities.Quotes> GetList();
-        Boolean RefreshFromService();
+        Task<Boolean> RefreshFromService();
     }
 }

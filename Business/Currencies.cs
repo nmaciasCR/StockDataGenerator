@@ -40,7 +40,7 @@ namespace StockDataGenerator.Business
         /// Actualiza las cotizaciones de las monedas
         /// </summary>
         /// <returns></returns>
-        public Boolean RefreshFromService()
+        public async Task<Boolean> RefreshFromService()
         {
             Model.CurrencyConverterResponse currenciesResponse;
             DateTime dateToRefresh = DateTime.Now;

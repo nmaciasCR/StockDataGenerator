@@ -55,7 +55,7 @@ namespace StockDataGenerator.Business
         /// Actualizamos las cotizaciones desde YahooFinance
         /// </summary>
         /// <returns></returns>
-        public Boolean RefreshFromService()
+        public async Task<Boolean> RefreshFromService()
         {
             List<Repositories.Model.Entities.Quotes> stockToUpdate;
             List<Model.YahooFinanceQuotes> yahooQuotes;
@@ -80,7 +80,7 @@ namespace StockDataGenerator.Business
                 while (subProcessList.Any())
                 {
                     //Cotizaciones de yahoo
-                    yahooQuotes = this._servicesYahooFinance.GetQuotes(subProcessList);
+                    yahooQuotes = await _servicesYahooFinance.GetQuotesAsync(subProcessList);
 
                     //update
                     foreach (Model.YahooFinanceQuotes yq in yahooQuotes)
@@ -120,19 +120,11 @@ namespace StockDataGenerator.Business
             catch (Exception ex)
             {
                 _writer.writeLine.Error("ERROR: RefreshFromService - " + ex.Message);
-                _writer.writeLine.Error("ERROR: " + JsonConvert.SerializeObject(subProcessList));
+                _writer.writeLine.Error("ERROR: " + string.Join(",", subProcessList.Select(q => q.symbol)));
                 return false;
             }
 
         }
-
-
-
-
-
-
-
-
 
 
     }

@@ -19,6 +19,8 @@ namespace StockDataGenerator.Repositories.Model.Entities
 
         public virtual DbSet<Currencies> Currencies { get; set; }
         public virtual DbSet<Markets> Markets { get; set; }
+        public virtual DbSet<Notifications> Notifications { get; set; }
+        public virtual DbSet<NotificationsTypes> NotificationsTypes { get; set; }
         public virtual DbSet<Portfolio> Portfolio { get; set; }
         public virtual DbSet<Quotes> Quotes { get; set; }
         public virtual DbSet<QuotesAlerts> QuotesAlerts { get; set; }
@@ -29,6 +31,7 @@ namespace StockDataGenerator.Repositories.Model.Entities
         {
             if (!optionsBuilder.IsConfigured)
             {
+
             }
         }
 
@@ -67,6 +70,39 @@ namespace StockDataGenerator.Repositories.Model.Entities
                     .IsUnicode(false);
 
                 entity.Property(e => e.state)
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+            });
+
+            modelBuilder.Entity<Notifications>(entity =>
+            {
+                entity.Property(e => e.description)
+                    .HasMaxLength(1000)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.entryDate).HasColumnType("datetime");
+
+                entity.Property(e => e.referenceId)
+                    .IsRequired()
+                    .HasMaxLength(20)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.title)
+                    .IsRequired()
+                    .HasMaxLength(150)
+                    .IsUnicode(false);
+
+                entity.HasOne(d => d.notificationType)
+                    .WithMany(p => p.Notifications)
+                    .HasForeignKey(d => d.notificationTypeId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Notifications_NotificationsTypes");
+            });
+
+            modelBuilder.Entity<NotificationsTypes>(entity =>
+            {
+                entity.Property(e => e.name)
                     .IsRequired()
                     .HasMaxLength(50)
                     .IsUnicode(false);

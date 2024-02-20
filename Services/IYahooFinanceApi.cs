@@ -1,4 +1,5 @@
-﻿using System;
+﻿using StockDataGenerator.Business.Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,6 @@ namespace StockDataGenerator.Services
 {
     public interface IYahooFinanceApi
     {
-        List<Business.Model.YahooFinanceQuotes> GetQuotes(List<Repositories.Model.Entities.Quotes> quotesList);
+        Task<List<YahooFinanceQuotes>> GetQuotesAsync(List<Repositories.Model.Entities.Quotes> quotesList);
     }
 }

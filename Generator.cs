@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 
 namespace StockDataGenerator
 {
@@ -11,7 +12,7 @@ namespace StockDataGenerator
         private readonly Business.Interfaces.IWriter _writer;
         private readonly Business.Interfaces.ICurrencies _businessCurrencies;
 
-        public void Run()
+        public async Task RunAsync()
         {
             //_logger.LogInformation("Comienza StockDataGenerator");
             _writer.writeLine.Info("Comienza StockDataGenerator");
@@ -19,11 +20,13 @@ namespace StockDataGenerator
             _writer.writeLine.Info("");
             _writer.writeLine.Info("Actualizando cotizaciones de acciones...");
             _writer.writeLine.Info("");
-            _businessStock.RefreshFromService();
+            var serviceStockResult = await _businessStock.RefreshFromService();
+            _writer.writeLine.Info("");
             _writer.writeLine.Info("Actualizando cotizaciones de divisas...");
             _writer.writeLine.Info("");
-            _businessCurrencies.RefreshFromService();
+            var serviceCurrencyResult = await _businessCurrencies.RefreshFromService();
             //_logger.LogInformation("Fin StockDataGenerator");
+            _writer.writeLine.Info("");
             _writer.writeLine.Info("Fin StockDataGenerator");
             _writer.writeLine.Info("---------------------------------");
             _writer.writeLine.Info("");

@@ -1,11 +1,15 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using StockDataGenerator.Business.Model;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,11 +17,16 @@ namespace StockDataGenerator.Services
 {
     public class YahooFinanceApi : IYahooFinanceApi
     {
-        private readonly ILogger<YahooFinanceApi> _logger;
+        Business.Interfaces.IWriter _writer;
+        String URL_STOCKS;
+        String API_KEY;
 
-        public YahooFinanceApi(ILogger<YahooFinanceApi> logger)
+
+        public YahooFinanceApi(IConfiguration configuration, Business.Interfaces.IWriter writer)
         {
-            this._logger = logger;
+            _writer = writer;
+            URL_STOCKS = configuration["Services:YahooFinance:url"];
+            API_KEY = configuration["Services:YahooFinance:apiKey"];
         }
 
 
@@ -25,46 +34,47 @@ namespace StockDataGenerator.Services
         /// Obtiene las cotizaciones de las acciones indicadas
         /// </summary>
         /// <returns></returns>
-        public List<Business.Model.YahooFinanceQuotes> GetQuotes(List<Repositories.Model.Entities.Quotes> quotesList)
+        public async Task<List<YahooFinanceQuotes>> GetQuotesAsync(List<Repositories.Model.Entities.Quotes> quotesList)
         {
-            List<Business.Model.YahooFinanceQuotes> list = new List<Business.Model.YahooFinanceQuotes>();
+            List<Business.Model.YahooFinanceQuotes> list = new List<YahooFinanceQuotes>();
             //lista de stocks separada por ","
             List<string> stocksToUrl = quotesList.Select(q => q.symbol).ToList();
-            var url = $"https://query1.finance.yahoo.com/v7/finance/quote?symbols=" + string.Join(",", stocksToUrl);
-            var request = (HttpWebRequest)WebRequest.Create(url);
-            request.Method = "GET";
-            request.ContentType = "application/json";
-            request.Accept = "application/json";
+            var url = URL_STOCKS + string.Join(",", stocksToUrl);
+
             try
             {
-                using (WebResponse response = request.GetResponse())
+
+                using (var client = new HttpClient())
                 {
-                    using (Stream strReader = response.GetResponseStream())
+                    client.DefaultRequestHeaders.Add("X-API-KEY", API_KEY);
+                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                    var clientRequest = new HttpRequestMessage(HttpMethod.Get, url);
+                    clientRequest.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                    HttpResponseMessage response = client.SendAsync(clientRequest).Result;
+
+                    if (response.IsSuccessStatusCode)
                     {
-                        if (strReader == null) throw new WebException($"ERROR EN {url}");
-                        using (StreamReader objReader = new StreamReader(strReader))
-                        {
-                            string responseBody = objReader.ReadToEnd();
-                            // Do something with responseBody
-                            Console.WriteLine(responseBody);
-                            //Creamos la lista de quotes
-                            JObject jResponse = JObject.Parse(responseBody);
-
-                            JArray quotes = (JArray)jResponse["quoteResponse"]["result"];
-                            list = JsonConvert.DeserializeObject<List<Business.Model.YahooFinanceQuotes>>(quotes.ToString());
-
-                        }
+                        string stocksResponse = await response.Content.ReadAsStringAsync();
+                        //Creamos la lista de quotes
+                        JObject jResponse = JObject.Parse(stocksResponse);
+                        JArray quotes = (JArray)jResponse["quoteResponse"]["result"];
+                        list = JsonConvert.DeserializeObject<List<YahooFinanceQuotes>>(quotes.ToString());
+                    }
+                    else
+                    {
+                        _writer.writeLine.Error($"ERROR EN METODO client.SendAsync({url})");
                     }
                 }
 
                 return list;
-
-
             }
             catch (WebException ex)
             {
+                _writer.writeLine.Error("ERROR: YahooFinance - GetQuotes() - WebException: " + ex.Message);
                 // Handle error
-                throw new WebException(ex.Message);
+                return list;
             }
 
 

@@ -13,7 +13,7 @@ namespace StockDataGenerator
         {
             var host = CreateHostBuilder(args).Build();
             var generator = ActivatorUtilities.CreateInstance<Generator>(host.Services);
-            generator.Run();
+            generator.RunAsync();
         }
 
         public static IHostBuilder CreateHostBuilder(String[] args)
