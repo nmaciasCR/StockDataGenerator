@@ -40,6 +40,7 @@ namespace StockDataGenerator
                     services.AddSingleton<Business.Interfaces.IWriter, Utils.Writer>();
                     services.AddTransient<Services.ICurrencyConverter, Services.CurrencyConverter>();
                     services.AddTransient<Business.Interfaces.ICurrencies, Business.Currencies>();
+                    services.AddSingleton<Business.Interfaces.IDateConverter, Utils.DateConverter>();
                 });
         }
 

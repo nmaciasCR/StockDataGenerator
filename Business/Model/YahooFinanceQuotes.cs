@@ -15,7 +15,8 @@ namespace StockDataGenerator.Business.Model
         public double regularMarketChangePercent { get; set; }
         public string symbol { get; set; }
         public double regularMarketChange { get; set; }
-
+        public string? exchangeTimezoneName { get; set; }
+        public long? earningsTimestamp { get; set; }
     }
 
 

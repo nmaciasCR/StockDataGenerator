@@ -14,15 +14,17 @@ namespace StockDataGenerator.Business
         //private readonly ILogger<Stocks> _logger;
         private Repositories.Model.Entities.TradeAlertContext _dbContext;
         private readonly Services.IYahooFinanceApi _servicesYahooFinance;
-        Business.Interfaces.IWriter _writer;
+        private Business.Interfaces.IWriter _writer;
+        private readonly Interfaces.IDateConverter _dateConverter;
 
         public Stocks(Repositories.Model.Entities.TradeAlertContext dbContext, Services.IYahooFinanceApi servicesYahooFinance,
-            Business.Interfaces.IWriter writer)
+            Business.Interfaces.IWriter writer, Interfaces.IDateConverter dateConverter)
         {
             //this._logger = logger;
-            this._dbContext = dbContext;
-            this._servicesYahooFinance = servicesYahooFinance;
-            this._writer = writer;
+            _dbContext = dbContext;
+            _servicesYahooFinance = servicesYahooFinance;
+            _writer = writer;
+            _dateConverter = dateConverter;
         }
 
 
@@ -92,6 +94,8 @@ namespace StockDataGenerator.Business
                             q.regularMarketChangePercent = Convert.ToDecimal(yq.regularMarketChangePercent);
                             q.regularMarketChange = Convert.ToDecimal(yq.regularMarketChange);
                             q.updateDate = dateToUpdate;
+                            q.timezoneName = yq.exchangeTimezoneName;
+                            q.earningsDate = _dateConverter.TimestampToDatetime(yq.earningsTimestamp, yq.exchangeTimezoneName);
                             //Mostramos el resultado sin error
                             _writer.write.Info(q.symbol + ": ");
                             _writer.write.Success("OK!");

@@ -24,6 +24,8 @@ namespace StockDataGenerator.Repositories.Model.Entities
         public decimal? regularMarketChange { get; set; }
         public DateTime dateReview { get; set; }
         public bool isMainIndex { get; set; }
+        public DateTime? earningsDate { get; set; }
+        public string timezoneName { get; set; }
 
         public virtual Currencies currency { get; set; }
         public virtual Markets market { get; set; }
