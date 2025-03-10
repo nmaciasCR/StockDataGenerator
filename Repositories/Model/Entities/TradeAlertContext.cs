@@ -17,7 +17,10 @@ namespace StockDataGenerator.Repositories.Model.Entities
         {
         }
 
+        public virtual DbSet<Calendar> Calendar { get; set; }
+        public virtual DbSet<CalendarTypes> CalendarTypes { get; set; }
         public virtual DbSet<Currencies> Currencies { get; set; }
+        public virtual DbSet<Groups> Groups { get; set; }
         public virtual DbSet<Markets> Markets { get; set; }
         public virtual DbSet<Notifications> Notifications { get; set; }
         public virtual DbSet<NotificationsTypes> NotificationsTypes { get; set; }
@@ -25,18 +28,51 @@ namespace StockDataGenerator.Repositories.Model.Entities
         public virtual DbSet<Quotes> Quotes { get; set; }
         public virtual DbSet<QuotesAlerts> QuotesAlerts { get; set; }
         public virtual DbSet<QuotesAlertsTypes> QuotesAlertsTypes { get; set; }
+        public virtual DbSet<QuotesGroups> QuotesGroups { get; set; }
         public virtual DbSet<QuotesPriority> QuotesPriority { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+                optionsBuilder.UseSqlServer("Server=NICO_HUAWEIXPRO;Initial Catalog=TradeAlert;Integrated Security=True");
             }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasAnnotation("Relational:Collation", "Modern_Spanish_CI_AS");
+
+            modelBuilder.Entity<Calendar>(entity =>
+            {
+                entity.Property(e => e.description)
+                    .IsRequired()
+                    .HasMaxLength(1000)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.entryDate).HasColumnType("datetime");
+
+                entity.Property(e => e.referenceId)
+                    .HasMaxLength(20)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.scheduleDate).HasColumnType("datetime");
+
+                entity.HasOne(d => d.calendarType)
+                    .WithMany(p => p.Calendar)
+                    .HasForeignKey(d => d.calendarTypeId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Calendar_Calendar");
+            });
+
+            modelBuilder.Entity<CalendarTypes>(entity =>
+            {
+                entity.Property(e => e.description)
+                    .IsRequired()
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+            });
 
             modelBuilder.Entity<Currencies>(entity =>
             {
@@ -51,6 +87,14 @@ namespace StockDataGenerator.Repositories.Model.Entities
                     .IsUnicode(false);
 
                 entity.Property(e => e.updateDate).HasColumnType("datetime");
+            });
+
+            modelBuilder.Entity<Groups>(entity =>
+            {
+                entity.Property(e => e.description)
+                    .IsRequired()
+                    .HasMaxLength(150)
+                    .IsUnicode(false);
             });
 
             modelBuilder.Entity<Markets>(entity =>
@@ -125,6 +169,10 @@ namespace StockDataGenerator.Repositories.Model.Entities
                 entity.Property(e => e.dateReview).HasColumnType("datetime");
 
                 entity.Property(e => e.earningsDate).HasColumnType("datetime");
+
+                entity.Property(e => e.isCached)
+                    .IsRequired()
+                    .HasDefaultValueSql("((1))");
 
                 entity.Property(e => e.name)
                     .IsRequired()
@@ -201,6 +249,23 @@ namespace StockDataGenerator.Repositories.Model.Entities
                     .IsRequired()
                     .HasMaxLength(100)
                     .IsUnicode(false);
+            });
+
+            modelBuilder.Entity<QuotesGroups>(entity =>
+            {
+                entity.HasKey(e => new { e.QuoteId, e.GroupId });
+
+                entity.HasOne(d => d.Group)
+                    .WithMany(p => p.QuotesGroups)
+                    .HasForeignKey(d => d.GroupId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_QuotesGroups_Groups");
+
+                entity.HasOne(d => d.Quote)
+                    .WithMany(p => p.QuotesGroups)
+                    .HasForeignKey(d => d.QuoteId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_QuotesGroups_Quotes");
             });
 
             modelBuilder.Entity<QuotesPriority>(entity =>

@@ -9,6 +9,7 @@ namespace StockDataGenerator.Repositories.Model.Entities
     {
         public int quoteId { get; set; }
         public int quantity { get; set; }
+        public double averagePurchasePrice { get; set; }
 
         public virtual Quotes quote { get; set; }
     }

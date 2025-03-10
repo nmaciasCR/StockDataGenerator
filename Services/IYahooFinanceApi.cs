@@ -10,5 +10,6 @@ namespace StockDataGenerator.Services
     public interface IYahooFinanceApi
     {
         Task<List<YahooFinanceQuotes>> GetQuotesAsync(List<Repositories.Model.Entities.Quotes> quotesList);
+        Task<List<YahooFinanceSpark>> GetSparkAsync(List<Repositories.Model.Entities.Quotes> quotesList);
     }
 }

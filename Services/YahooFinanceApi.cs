@@ -19,13 +19,15 @@ namespace StockDataGenerator.Services
     {
         Business.Interfaces.IWriter _writer;
         String URL_STOCKS;
+        String URL_SPARK;
         String API_KEY;
 
 
         public YahooFinanceApi(IConfiguration configuration, Business.Interfaces.IWriter writer)
         {
             _writer = writer;
-            URL_STOCKS = configuration["Services:YahooFinance:url"];
+            URL_STOCKS = configuration["Services:YahooFinance:quoteUrl"];
+            URL_SPARK = configuration["Services:YahooFinance:sparkUrl"];
             API_KEY = configuration["Services:YahooFinance:apiKey"];
         }
 
@@ -83,6 +85,57 @@ namespace StockDataGenerator.Services
         }
 
 
+        /// <summary>
+        /// Retorna los valores de cierre de una accion en un determinado rango de tiempo
+        /// </summary>
+        public async Task<List<YahooFinanceSpark>> GetSparkAsync(List<Repositories.Model.Entities.Quotes> quotesList)
+        {
+            //Dictionary para deserializar
+            Dictionary<string, YahooFinanceSpark> dict = new Dictionary<string, YahooFinanceSpark>();
+            //Lista de retorno
+            List<YahooFinanceSpark> list = new List<YahooFinanceSpark>();
+            //lista de stocks separada por ","
+            List<string> stocksToUrl = quotesList.Select(q => q.symbol).ToList();
+            var url = URL_SPARK + string.Join(",", stocksToUrl);
+
+            try
+            {
+
+                using (var client = new HttpClient())
+                {
+                    client.DefaultRequestHeaders.Add("X-API-KEY", API_KEY);
+                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                    var clientRequest = new HttpRequestMessage(HttpMethod.Get, url);
+                    clientRequest.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                    HttpResponseMessage response = client.SendAsync(clientRequest).Result;
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string stocksResponse = await response.Content.ReadAsStringAsync();
+                        //Creamos la lista de quotes
+                        JObject jResponse = JObject.Parse(stocksResponse);
+                        dict = JsonConvert.DeserializeObject<Dictionary<string, YahooFinanceSpark>>(jResponse.ToString());
+                    }
+                    else
+                    {
+                        _writer.writeLine.Error($"ERROR EN METODO client.SendAsync({url})");
+                    }
+                }
+
+                return dict.Values.ToList();
+
+            }
+            catch (Exception ex)
+            {
+                _writer.writeLine.Error("ERROR: YahooFinance - GetSparkAsync() - WebException: " + ex.Message);
+                // Handle error
+                return list;
+            }
+
+
+        }
 
 
     }
